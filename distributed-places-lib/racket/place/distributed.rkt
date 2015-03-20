@@ -157,7 +157,7 @@
 (define (write-flush msg [p (current-output-port)])
 ;  (write msg (current-output-port))
 ;  (newline)
-  (flush-output)
+;  (flush-output)
   (write msg p)
   (flush-output p))
 
