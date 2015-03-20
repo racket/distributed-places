@@ -727,7 +727,11 @@
                   [background-connect? #t]
                   [in #f]
                   [out #f]
-                  [remote-node #f])
+                  [remote-node #f]
+                  ;; semaphores for atomic reading/writing of in and out
+                  [write-message-sem (make-semaphore 1)]
+                  [read-message-sem (make-semaphore 1)]
+                  )
       (field [subchannels null]
              [connecting #f]
              [ch #f])
@@ -770,7 +774,9 @@
         (when (equal? out #f) (ensure-connected))
         ;(printf/f "SC ~a ~a\n" x out)
         (with-handlers ([exn:fail? handle-error])
-          (write-flush x out)))
+          (when write-message-sem (semaphore-wait write-message-sem))
+          (write-flush x out))
+          (when write-message-sem (semaphore-post write-message-sem)))
       (define/public (remove-subchannel id)
         (set! subchannels (filter-map
                             (lambda (x) (and (not (= (car x) id)) x))
@@ -788,7 +794,9 @@
 
       (define/public (read-message)
         (when (equal? out #f) (ensure-connected))
+        (when read-message-sem (semaphore-wait read-message-sem))
         (define m (read in))
+        (when read-message-sem (semaphore-post read-message-sem))
         ;(printf/f "MESSAGE ~a\n" m)
         m)
       (define/public (register nes)
