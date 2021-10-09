@@ -10,3 +10,6 @@
 (define pkg-desc "Libraries for distributed computations")
 
 (define pkg-authors '(tewk))
+
+(define license
+  '(Apache-2.0 OR MIT))
